@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  gate-control:
+    build: .
+    container_name: gate-control-system
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount config directory to persist trusted numbers and users
+      - ./config:/app/config
+      # Mount logs directory to persist logs
+      - ./logs:/app/logs
+      # Mount templates if you want to edit them without rebuilding
+      - ./templates:/app/templates
+    environment:
+      # 46elks API credentials
+      - ELKS_USERNAME=${ELKS_USERNAME}
+      - ELKS_PASSWORD=${ELKS_PASSWORD}
+      
+      # Home Assistant configuration
+      - HOME_ASSISTANT_URL=${HOME_ASSISTANT_URL}
+      - HOME_ASSISTANT_WEBHOOK_ID=${HOME_ASSISTANT_WEBHOOK_ID}
+      
+      # Server configuration
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - SERVER_PORT=5000
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env
+    networks:
+      - gate-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  gate-network:
+    driver: bridge
+
+# Optional: Add nginx reverse proxy for HTTPS
+# Uncomment if you want to use nginx with SSL
+#
+#  nginx:
+#    image: nginx:alpine
+#    container_name: gate-control-nginx
+#    restart: unless-stopped
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./ssl:/etc/nginx/ssl:ro
+#    depends_on:
+#      - gate-control
+#    networks:
+#      - gate-network

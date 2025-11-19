@@ -1,0 +1,11 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password_hash": "scrypt:32768:8:1$vYxQZGJ3OqKMKxLr$8c6976e5b5410415bde908bd4dee15dfb167a5c873fc4c7e219367aa12e0a5f1e0c1e9f9e1c1e9f9e1c1e9f9e1c1e9f9e1c1e9f9e1c1e9f9e1c1e9f9e1c1e9f9",
+      "role": "admin",
+      "created": "2024-01-01T00:00:00"
+    }
+  ],
+  "description": "User accounts for gate control system. Default password: 'admin123' - CHANGE THIS!"
+}

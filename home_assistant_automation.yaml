@@ -1,0 +1,109 @@
+# Home Assistant Automation Configuration
+# Add this to your Home Assistant configuration.yaml or automations.yaml
+
+# Method 1: Using YAML configuration
+automation:
+  - alias: "Gate Control - Open via Phone Call"
+    description: "Opens the gate when triggered by phone call webhook"
+    trigger:
+      - platform: webhook
+        webhook_id: "your_secret_webhook_id_here"
+        allowed_methods:
+          - POST
+        local_only: false  # Set to true if webhook server is on same network
+    condition: []
+    action:
+      # Option A: If you have a switch entity for the gate
+      - service: switch.turn_on
+        target:
+          entity_id: switch.gate_opener
+      
+      # Option B: If you have a cover entity for the gate
+      # - service: cover.open_cover
+      #   target:
+      #     entity_id: cover.main_gate
+      
+      # Option C: If you have a script to open the gate
+      # - service: script.open_gate
+      
+      # Optional: Send notification
+      - service: notify.mobile_app_your_phone
+        data:
+          message: "Gate opened via phone call at {{ now().strftime('%H:%M:%S') }}"
+          title: "Gate Control"
+      
+      # Optional: Log the event
+      - service: logbook.log
+        data:
+          name: "Gate Control"
+          message: "Gate opened via phone call webhook"
+          entity_id: switch.gate_opener
+    
+    mode: single
+
+
+# Method 2: Alternative with more detailed logging
+automation:
+  - alias: "Gate Control - Open via Phone Call (Advanced)"
+    description: "Opens the gate with detailed logging"
+    trigger:
+      - platform: webhook
+        webhook_id: "your_secret_webhook_id_here"
+        allowed_methods:
+          - POST
+        local_only: false
+    condition: []
+    action:
+      # Log the trigger data
+      - service: system_log.write
+        data:
+          message: "Gate webhook triggered with data: {{ trigger.json }}"
+          level: info
+      
+      # Open the gate
+      - service: switch.turn_on
+        target:
+          entity_id: switch.gate_opener
+      
+      # Wait for gate to open (adjust time as needed)
+      - delay:
+          seconds: 5
+      
+      # Optional: Auto-close after 30 seconds
+      - delay:
+          seconds: 25
+      - service: switch.turn_off
+        target:
+          entity_id: switch.gate_opener
+      
+      # Send notification with caller info if available
+      - service: notify.mobile_app_your_phone
+        data:
+          message: >
+            Gate opened at {{ now().strftime('%H:%M:%S') }}
+            {% if trigger.json.caller is defined %}
+            Caller: {{ trigger.json.caller }}
+            {% endif %}
+          title: "🚪 Gate Opened"
+    
+    mode: single
+
+
+# Method 3: Using UI Editor
+# 1. Go to Settings -> Automations & Scenes
+# 2. Click "+ Create Automation"
+# 3. Click "Create new automation"
+# 4. Add Trigger:
+#    - Trigger type: Webhook
+#    - Webhook ID: your_secret_webhook_id_here
+# 5. Add Action:
+#    - Action type: Call service
+#    - Service: switch.turn_on (or cover.open_cover)
+#    - Target: Your gate entity
+# 6. Save the automation
+
+
+# Security Note:
+# The webhook_id should be a long, random, unique string.
+# Generate one using: python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+# Example: "xK8mP2vN9qR4sT7wY1zA3bC5dE6fG8hJ9kL0mN2oP4qR"

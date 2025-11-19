@@ -1,0 +1,7 @@
+{
+  "numbers": [
+    "+46701234567",
+    "+46709876543"
+  ],
+  "description": "List of phone numbers allowed to open the gate. Use E.164 format (e.g., +46701234567)"
+}
